@@ -10,15 +10,16 @@ class parser(BaseModel):
     def load_file(self):
         try:
             with open(self.path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-            if not data:
+                raw_data = json.load(f)
+            # si data n existe pas alors return de list vide
+            if not raw_data:
                 return []
-            return data
+            return raw_data
         except Exception as e:
             print(e)
             return []
 
-    def parse_json(self, data):
+    def parse_json(self, raw_data):
         pass
 
     # def load_file(self):

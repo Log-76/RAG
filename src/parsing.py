@@ -22,7 +22,10 @@ class parser(BaseModel):
             return []
 
     def parse_json(self, raw_data):
-        pass
+        if "rag_questions" in raw_data:
+            rag_questions = dict(raw_data)
+            return rag_questions
+
 
     # def load_file(self):
     # try:

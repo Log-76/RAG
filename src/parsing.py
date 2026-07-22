@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+from utils import error
 import json
 
 
@@ -13,10 +14,11 @@ class parser(BaseModel):
                 raw_data = json.load(f)
             # si data n existe pas alors return de list vide
             if not raw_data:
+                error("raw_data not exist")
                 return []
             return raw_data
         except Exception as e:
-            print(e)
+            error(f"error: {e}")
             return []
 
     def parse_json(self, raw_data):

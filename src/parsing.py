@@ -13,7 +13,7 @@ class parser(BaseModel):
                 data = dict(json.load(f))
             # verif que on a bien une liste d info
             if not isinstance(data, dict):
-                print("error is not dict")
+                print("error is not dict", data)
                 return []
             return data
         except Exception as e:

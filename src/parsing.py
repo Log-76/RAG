@@ -18,6 +18,9 @@ class parser(BaseModel):
             print(e)
             return []
 
+    def parse_json(self, data):
+        pass
+
     # def load_file(self):
     # try:
     #     with open(self.path, 'r', encoding='utf-8') as f:

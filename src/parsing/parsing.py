@@ -26,6 +26,14 @@ class parser(BaseModel):
             rag_questions = dict(raw_data)
             return rag_questions
 
+    def ispython(self):
+        pass
+
+    def ismakedown(self):
+        pass
+
+    def flags(self, flag: list):
+        pass
 
     # def load_file(self):
     # try:

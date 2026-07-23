@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import List
-from minimal_source import MinimalSource
+from parsing.minimal_source import MinimalSource
 
 
 class UnansweredQuestion(BaseModel):

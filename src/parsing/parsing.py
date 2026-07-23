@@ -32,8 +32,10 @@ class parser(BaseModel):
     def ismakedown(self):
         pass
 
-    def flags(self, flag: list):
-        pass
+    def max_chunks(self, max_chunk=2000):
+        if max_chunk > 2000 or max_chunk <= 0:
+            max_chunk = 2000
+        return max_chunk
 
     # def load_file(self):
     # try:

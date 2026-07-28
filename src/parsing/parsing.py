@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from utils import error
+from utils import error, warning
 import json
 
 
@@ -33,6 +33,10 @@ class parser(BaseModel):
         pass
 
     def max_chunks(self, max_chunk=2000):
+        if not isinstance(max_chunk, int):
+            warning("is not int, value default is 2000")
+            return 2000
+
         if max_chunk > 2000 or max_chunk <= 0:
             max_chunk = 2000
         return max_chunk

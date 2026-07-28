@@ -26,11 +26,14 @@ class parser(BaseModel):
             rag_questions = dict(raw_data)
             return rag_questions
 
-    def ispython(self):
-        pass
-
-    def ismakedown(self):
-        pass
+    def extend_file(self):
+        try:
+            if "." in self.path:
+                stock = self.path.split(".")
+                return stock[-1]
+        except Exception as e:
+            error(e)
+        return
 
     def max_chunks(self, max_chunk=2000):
         if not isinstance(max_chunk, int):

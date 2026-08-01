@@ -2,6 +2,7 @@ from pathlib import Path
 from rank_bm25 import BM25Okapi
 from ..parsing import MinimalSource
 from ..utils import error
+from ..utils.extract_data import retrieve_data_from_minimal_source
 import pickle
 import re
 

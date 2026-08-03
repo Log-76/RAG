@@ -2,7 +2,7 @@ import torch
 from ..parsing import MinimalSource
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from ..utils import error
-from ..utils.extract_data import retrieve_data_from_minimal_source
+from ..utils import retrieve_data_from_minimal_source
 
 
 class Generation():
@@ -25,7 +25,6 @@ class Generation():
             error(f"Failed to load model {self.model_name}: {e}")
             exit()
 
-
     def build_prompt(self, data_to_extract: list[MinimalSource],
                      question: str) -> list[dict[str, str]]:
         try:
@@ -42,7 +41,7 @@ class Generation():
                 system_block.append(f"[Source: {x.file_path}]\n{text}")
             context = ("\n\n".join(system_block)
                        if system_block
-                        else "(no relevant context found)"
+                       else "(no relevant context found)"
                        )
             user_context = f"Context:\n{context}\n\nQuestion: {question}"
             return [

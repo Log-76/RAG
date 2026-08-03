@@ -56,8 +56,8 @@ class Chunking():
             start_index = doc.metadata['start_index']
             end_index = start_index + len(doc.page_content)
             source.append(MinimalSource(file_path=str(path),
-                                         first_character_index=start_index,
-                                         last_character_index=end_index))
+                                        first_character_index=start_index,
+                                        last_character_index=end_index))
         return source
 
     def python_chunking(self, path: Path, data: str) -> list[MinimalSource]:
@@ -77,6 +77,6 @@ class Chunking():
             start_index = doc.metadata['start_index']
             end_index = start_index + len(doc.page_content)
             source.append(MinimalSource(file_path=str(path),
-                                         first_character_index=start_index,
-                                         last_character_index=end_index))
+                                        first_character_index=start_index,
+                                        last_character_index=end_index))
         return source

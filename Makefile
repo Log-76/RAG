@@ -2,9 +2,11 @@
 #  VARIABLES
 # ============================================================
 
-UV       := uv
-VENV	 := .venv
-USER	 := spacotto 
+USER         ?= $(shell whoami)
+VENV         := /tmp/$(USER)_venv
+UV_CACHE_DIR := /tmp/$(USER)_uv_cache
+PYTHON_VENV  := $(VENV)/bin/python
+UV           := UV_CACHE_DIR=$(UV_CACHE_DIR) $(VENV)/bin/uv
 LLM	 := llm_sdk
 PYTHON   := $(UV) run python
 
@@ -82,9 +84,14 @@ help:
 # ------------------------------------------------------------
 
 install:
-	@$(ECHO) "$(YELLOW)>>> Synchronizing project dependencies via uv...$(RESET)"
-	$(UV) sync
-	@$(ECHO) "$(CYAN)>>> Environment sync complete.$(RESET)"
+	@$(ECHO) "$(YELLOW)>>> Creating virtual environment in $(VENV)...$(RESET)"
+	python3 -m venv $(VENV)
+	@$(ECHO) "$(YELLOW)>>> Installing uv in the virtual environment...$(RESET)"
+	$(PYTHON_VENV) -m pip install --upgrade pip
+	$(PYTHON_VENV) -m pip install uv
+	@$(ECHO) "$(YELLOW)>>> Installing dependencies from pyproject.toml...$(RESET)"
+	$(UV) pip install --python $(VENV) .
+	@$(ECHO) "$(CYAN)>>> Environment ready! Activate it with: source $(VENV)/bin/activate$(RESET)"
 
 # ------------------------------------------------------------
 #  run — execute the main script
@@ -113,21 +120,20 @@ debug:
 # ------------------------------------------------------------
 
 clean:
-	@$(ECHO) "$(YELLOW)>>> Cleaning __pycache__$(RESET)"
+	@$(ECHO) "$(YELLOW)>>> Removing Python bytecode caches...$(RESET)"
 	@$(FIND) . -type d -name "__pycache__" -exec $(RM) {} + $(IGNORE)
-	@$(ECHO) "$(YELLOW)>>> Cleaning *.pyc$(RESET)"
 	@$(FIND) . -type f -name "*.pyc" -delete $(IGNORE)
-	@$(ECHO) "$(YELLOW)>>> Cleaning *.pyo$(RESET)"
 	@$(FIND) . -type f -name "*.pyo" -delete $(IGNORE)
-	@$(ECHO) "$(YELLOW)>>> Cleaning .mypy_cache$(RESET)"
+	@$(ECHO) "$(YELLOW)>>> Removing test & linter caches...$(RESET)"
 	@$(FIND) . -type d -name ".mypy_cache" -exec $(RM) {} + $(IGNORE)
-	@$(ECHO) "$(YELLOW)>>> Cleaning .ruff_cache$(RESET)"
 	@$(FIND) . -type d -name ".ruff_cache" -exec $(RM) {} + $(IGNORE)
-	@$(ECHO) "$(YELLOW)>>> Cleaning .pytest_cache$(RESET)"
 	@$(FIND) . -type d -name ".pytest_cache" -exec $(RM) {} + $(IGNORE)
-	@$(ECHO) "$(YELLOW)>>> Cleaning *.egg-info$(RESET)"
+	@$(ECHO) "$(YELLOW)>>> Removing build artifacts and package infos...$(RESET)"
 	@$(FIND) . -type d -name "*.egg-info" -exec $(RM) {} + $(IGNORE)
-	@$(ECHO) "$(CYAN)>>> Done.$(RESET)"
+	@$(RM) build/ dist/ .uv/
+	@$(ECHO) "$(YELLOW)>>> Removing generated output files...$(RESET)"
+	@$(RM) $(OUTPUT_F)
+	@$(ECHO) "$(CYAN)>>> Clean complete.$(RESET)"
 
 # ------------------------------------------------------------
 #  lint — standard type-checking and style enforcement
@@ -183,11 +189,12 @@ campus-init:
 # ------------------------------------------------------------
 
 clean-venv:
-	@$(ECHO) "$(YELLOW)>>> Cleaning venv and campus tmp files$(RESET)"
+	@$(ECHO) "$(YELLOW)>>> Cleaning virtual environment and caches...$(RESET)"
 	@$(RM) $(VENV)
-	@$(RM) "/tmp/$(USER)_callmemaybe_$(VENV)"
-	@$(RM) "/tmp/$(USER)_uv_cache"
-	@$(ECHO) "$(CYAN)>>> Done.$(RESET)"
+	@$(RM) $(UV_CACHE_DIR)
+	@$(RM) "/tmp/$(USER)_venv"
+	@$(RM) .venv
+	@$(ECHO) "$(CYAN)>>> Virtual environment cleanup complete.$(RESET)"
 
 # ------------------------------------------------------------
 #  visual — Visualise the generation process 

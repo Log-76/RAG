@@ -1,3 +1,6 @@
 from minimal_source import MinimalSource
+from answered_question import AnsweredQuestion, UnansweredQuestion
 
-__All__ = [MinimalSource]
+__all__ = ["MinimalSource",
+           "AnsweredQuestion",
+           "UnansweredQuestion"]

@@ -48,7 +48,3 @@ class parser(BaseModel):
         if max_chunk > 2000 or max_chunk <= 0:
             max_chunk = 2000
         return max_chunk
-
-
-c = parser(path="dataset_code_public.json")
-print(c.load_file())

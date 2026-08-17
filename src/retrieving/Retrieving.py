@@ -1,23 +1,53 @@
-from langchain_community.retrievers import BM25Retriever
+import re
 from indexing import Indexing
 from pathlib import Path
+from utils.utils import error
+from minimal_search_results import MinimalSearchResults
 from parsing.parsing import parser
 
 
 class Retrieving():
-    def __init__(self, source: Path, questionpath: Path, k: int = 1):
-        self.k: int = k
+    def __init__(self, source: Path, question_path: Path, k: int = 1):
         self.source: Path = source
-        self.questionpath: Path = questionpath
-        self.docs = Indexing.load(self.source)
-        self.question = parser.load_file(self.questionpath)
+        self.docs = Indexing()
+        self.docs.load(self.source)
+        self.question_path = question_path
+        self.k = k
 
-    def retrieving(self):
+    def retrieve_all(self):
+        data = parser.load_file(self.question_path)
+        questions_list = data.get("rag_questions", [])
 
-        # Création du retriever BM25
-        retriever = BM25Retriever.from_documents(self.docs)
-        retriever.k = self.k  # Nombre de résultats à renvoyer
+        all_results = []
+        for item in questions_list:
+            q_id = item["question_id"]
+            q_text = item["question"]
 
-        # Recherche
-        results = retriever.invoke(self.question)
-        return results
+            # Appel de la recherche pour la question en cours
+            result = self.retrieving(question_id=q_id, question=q_text)
+            if result:
+                all_results.append(result)
+
+        return all_results
+
+    def retrieving(self, question_id, question: str,) -> list[MinimalSearchResults]:
+        try:
+            if not self.docs.bm25_index:
+                error("L'index BM25 not exist")
+            # decoupage de la question part mot
+            # lower pour metre tout en miniscule
+            # Utilise re.findall pour extraire uniquement les mots/identifiants
+            tokenized_query = re.findall(r'\w+', question.lower())
+
+            # Création du retriever BM25
+            retrieving = self.docs.bm25_index.get_top_n(tokenized_query,
+                                                        self.docs.
+                                                        indexed_sources,
+                                                        n=self.k)
+            results = MinimalSearchResults(question_id=question_id,
+                                           question=question,
+                                           retrieved_sources=retrieving)
+            self.question_id += 1
+            return results
+        except Exception as e:
+            error(f"error: {e}")

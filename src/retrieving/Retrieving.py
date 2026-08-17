@@ -1,20 +1,18 @@
 from langchain_community.retrievers import BM25Retriever
-from langchain_core.documents import Document
+from indexing import Indexing
+from pathlib import Path
 
 
 class Retrieving():
-    def __init__(self, k: int = 1):
+    def __init__(self, source: Path, k: int = 1):
         self.k: int = k
+        self.source: Path = source
+        self.docs = Indexing.load(self.source)
 
     def retrieving(self):
-        docs = [
-            Document(page_content="Le RAG améliore les réponses des LLM."),
-            Document(page_content="BM25 calcule la pertinence basée"
-                     " sur la fréquence des termes.")
-        ]
 
         # Création du retriever BM25
-        retriever = BM25Retriever.from_documents(docs)
+        retriever = BM25Retriever.from_documents(self.docs)
         retriever.k = self.k  # Nombre de résultats à renvoyer
 
         # Recherche

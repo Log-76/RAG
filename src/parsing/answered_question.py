@@ -9,9 +9,6 @@ class UnansweredQuestion(BaseModel):
                              str(uuid.uuid4()))
     question: str
 
-    def UnansweredQuestion_data(self):
-        return {"question_id": self.question_id, "question": self.question}
-
 
 class AnsweredQuestion(UnansweredQuestion):
     sources: List[MinimalSource]

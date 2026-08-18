@@ -1,8 +1,8 @@
 from ..parsing import MinimalSource
-from utils import error
+from .utils import error
 
 
-def retrieve_data_from_minimal_source(self, data: MinimalSource) -> str:
+def retrieve_data_from_minimal_source(data: MinimalSource) -> str:
     try:
         with open(data.file_path, 'r', encoding='utf-8') as f:
             raw_data = f.read()

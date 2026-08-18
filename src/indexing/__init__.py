@@ -1,6 +1,6 @@
-from Chunking import Chunking
-from Indexing import Indexing
-from Ingestion import Ingestion
+from .Chunking import Chunking
+from .Indexing import Indexing
+from .Ingestion import Ingestion
 
 __all__ = ["Chunking",
            "Indexing",

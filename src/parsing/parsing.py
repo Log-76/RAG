@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
-from rag_dataset import RagDataset
-from utils import error, warning
+#from .rag_dataset import RagDataset
+from ..utils import error, warning
 import json
 
 
@@ -25,7 +25,8 @@ class parser(BaseModel):
     def parse_json(self, raw_data):
         if isinstance(raw_data, dict) and "rag_questions" in raw_data:
             try:
-                return RagDataset.model_validate(raw_data)
+#                return RagDataset.model_validate(raw_data)
+                return
             except Exception as e:
                 error(f"error: {e}")
         else:

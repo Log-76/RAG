@@ -31,7 +31,7 @@ class Indexing():
             tokenized_corpus: list[list[str]] = []
             for source in data:
                 texts.append(
-                    self.retrieve_data_from_minimal_source(source)
+                    retrieve_data_from_minimal_source(source)
                 )
             for source, text in zip(data, texts):
                 file_type = Path(source.file_path).suffix.lstrip(".")

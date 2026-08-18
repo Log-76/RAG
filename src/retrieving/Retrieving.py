@@ -4,6 +4,7 @@ from indexing import Indexing
 from pathlib import Path
 from utils.utils import error
 from minimal_search_results import MinimalSearchResults
+from student_search import StudentSearchResults
 from parsing.parsing import parser
 
 
@@ -15,7 +16,7 @@ class Retrieving():
         self.question_path = question_path
         self.k = k
 
-    def retrieve_all(self):
+    def retrieve_all(self) -> StudentSearchResults:
         data = parser.load_file(self.question_path)
         questions_list = data.get("rag_questions", [])
 
@@ -29,9 +30,9 @@ class Retrieving():
             if result:
                 all_results.append(result)
 
-        return all_results
+        return StudentSearchResults(search_results=all_results, k=self.k)
 
-    def retrieving(self, question_id, question: str) -> list[MinimalSearchResults]:
+    def retrieving(self, question_id, question: str) -> MinimalSearchResults:
         try:
             if not self.docs.bm25_index:
                 error("L'index BM25 not exist")
@@ -48,13 +49,14 @@ class Retrieving():
             results = MinimalSearchResults(question_id=question_id,
                                            question=question,
                                            retrieved_sources=retrieving)
-            self.question_id += 1
             return results
         except Exception as e:
             error(f"error: {e}")
 
     def search_query(self, query: str, k: int):
         try:
+            if not self.docs.bm25_index:
+                error("L'index BM25 not exist")
             tokenized_query = re.findall(r'\w+', query.lower())
 
             retrieving = self.docs.bm25_index.get_top_n(tokenized_query,

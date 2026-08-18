@@ -1,3 +1,3 @@
-from Generation import Generation
+from .Generation import Generation
 
 __all__ = ["Generation"]

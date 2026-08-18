@@ -1,19 +1,19 @@
 import re
 import uuid
-from indexing import Indexing
+from ..indexing import Indexing
 from pathlib import Path
-from utils.utils import error
-from minimal_search_results import MinimalSearchResults
-from student_search import StudentSearchResults
-from parsing.parsing import parser
+from ..utils.utils import error
+from ..minimal_search_results import MinimalSearchResults
+from ..student_search import StudentSearchResults
+from ..parsing.parsing import parser
 
 
 class Retrieving():
     def __init__(self, source: Path, question_path: Path, k: int = 1):
         self.source: Path = source
         self.docs = Indexing()
-        self.docs.load(self.source)
-        self.question_path = question_path
+        self.docs.load(Path(self.source))
+        self.question_path = Path(question_path)
         self.k = k
 
     def retrieve_all(self) -> StudentSearchResults:
@@ -72,3 +72,4 @@ class Retrieving():
             return result
         except Exception as e:
             error(f"error: {e}")
+            return

@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import List
-from minimal_search_results import MinimalSearchResults, MinimalAnswer
+from .minimal_search_results import MinimalSearchResults, MinimalAnswer
 
 
 class StudentSearchResults(BaseModel):

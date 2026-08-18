@@ -1,5 +1,6 @@
 import torch
 from ..parsing import MinimalSource
+from ..minimal_search_results import MinimalSearchResults, MinimalAnswer
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from ..utils import error
 from ..utils import retrieve_data_from_minimal_source
@@ -31,7 +32,8 @@ class Generation():
             system_context = (
                     "You are a technical assistant answering questions"
                     " about a codebase. Answer ONLY using the provided"
-                    " context. If the context does not contain the answer"
+                    " context. Do not describe unrelated usage details."
+                    " If the context does not contain the answer"
                     ", say so explicitly. Be concise.")
             system_block = []
             for x in data_to_extract:
@@ -51,3 +53,42 @@ class Generation():
         except Exception as e:
             error(f"Error while building prompt {question}: {e}")
             raise
+
+    def generate_answer(
+        self,
+        search_result: MinimalSearchResults
+    ) -> MinimalAnswer:
+        if self.model is None or self.tokenizer is None:
+            self.load_model()
+
+        messages = self.build_prompt(
+            search_result.retrieved_sources,
+            search_result.question
+        )
+        prompt = self.tokenizer.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True,
+            enable_thinking=False
+        )
+        inputs = self.tokenizer(prompt, return_tensors="pt")
+        with torch.no_grad():
+            outputs = self.model.generate(
+                **inputs,
+                max_new_tokens=1024,
+                do_sample=False,
+                pad_token_id=self.tokenizer.pad_token_id
+            )
+        generated_tokens = outputs[0][inputs["input_ids"].shape[1]:]
+        raw_output = self.tokenizer.decode(generated_tokens, skip_special_tokens=False)
+        answer_text = self.tokenizer.decode(
+            generated_tokens,
+            skip_special_tokens=True
+        ).strip()
+        return MinimalAnswer(
+        question_id=search_result.question_id,
+        question=search_result.question,
+        retrieved_sources=search_result.retrieved_sources,
+        answer=answer_text
+    )
+

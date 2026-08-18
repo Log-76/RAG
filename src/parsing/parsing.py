@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+from pathlib import Path
 #from .rag_dataset import RagDataset
 from ..utils import error, warning
 import json
@@ -9,9 +10,9 @@ class parser(BaseModel):
         ...,
         description="Path to the functions definition JSON file")
 
-    def load_file(self):
+    def load_file(path: Path):
         try:
-            with open(self.path, 'r', encoding='utf-8') as f:
+            with open(path, 'r', encoding='utf-8') as f:
                 raw_data = json.load(f)
             # si data n existe pas alors return de list vide
             if not raw_data:

@@ -1,4 +1,5 @@
 import re
+import uuid
 from indexing import Indexing
 from pathlib import Path
 from utils.utils import error
@@ -30,7 +31,7 @@ class Retrieving():
 
         return all_results
 
-    def retrieving(self, question_id, question: str,) -> list[MinimalSearchResults]:
+    def retrieving(self, question_id, question: str) -> list[MinimalSearchResults]:
         try:
             if not self.docs.bm25_index:
                 error("L'index BM25 not exist")
@@ -49,5 +50,23 @@ class Retrieving():
                                            retrieved_sources=retrieving)
             self.question_id += 1
             return results
+        except Exception as e:
+            error(f"error: {e}")
+
+    def search_query(self, query: str, k: int):
+        try:
+            tokenized_query = re.findall(r'\w+', query.lower())
+
+            retrieving = self.docs.bm25_index.get_top_n(tokenized_query,
+                                                        self.docs.
+                                                        indexed_sources,
+                                                        n=k)
+            # generatiomn de l id
+            query_id = str(uuid.uuid4())
+
+            result = MinimalSearchResults(question_id=query_id,
+                                          question=query,
+                                          retrieved_sources=retrieving)
+            return result
         except Exception as e:
             error(f"error: {e}")

@@ -25,7 +25,7 @@ class parser(BaseModel):
     def parse_json(self, raw_data):
         if isinstance(raw_data, dict) and "rag_questions" in raw_data:
             try:
-#                return RagDataset.model_validate(raw_data)
+                # return RagDataset.model_validate(raw_data)
                 return
             except Exception as e:
                 error(f"error: {e}")

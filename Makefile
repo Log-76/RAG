@@ -4,17 +4,18 @@
 
 USER         ?= $(shell whoami)
 VENV         := /tmp/$(USER)_venv
+FALSE_VENV   := .venv
 UV_CACHE_DIR := /tmp/$(USER)_uv_cache
 PYTHON_VENV  := $(VENV)/bin/python
-UV           := UV_CACHE_DIR=$(UV_CACHE_DIR) $(VENV)/bin/uv
+UV           := UV_CACHE_DIR=$(UV_CACHE_DIR) uv
 LLM	 := llm_sdk
-PYTHON   := $(UV) run python
+PYTHON   := $(UV) run --active python
 
 PYTEST   := $(UV) run pytest
 TESTDIR	 := tests
 
-MYPY     := $(UV) run mypy
-FLAKE8   := $(UV) run flake8
+MYPY     := mypy
+FLAKE8   := flake8
 EXCLUDE	 := --extend-exclude=$(VENV),$(TESTDIR),$(LLM),moulinette
 
 FUNC_DEF ?= data/input/functions_definition.json
@@ -73,9 +74,7 @@ help:
 	@$(ECHO) " $(CYAN)BONUS RULES$(RESET)"
 	@$(ECHO) ""
 	@$(ECHO) "     $(CYAN)campus-init$(RESET)  Set up environment in /tmp"
-	@$(ECHO) "     $(CYAN)visual$(RESET)       Run generation with live state-machine visualization"
 	@$(ECHO) "     $(CYAN)test$(RESET)         Run test suite"
-	@$(ECHO) "     $(CYAN)run-alt$(RESET)      Run the pipeline with another model"
 	@$(ECHO) "     $(CYAN)clean-venv$(RESET)   Remove the venv"
 	@$(ECHO) ""
 
@@ -141,9 +140,10 @@ clean:
 
 lint:
 	@$(ECHO) "$(YELLOW)>>> Running flake8...$(RESET)"
-	@$(FLAKE8) . $(EXCLUDE) $(IGNORE)
+	@$(FLAKE8) src/ $(EXCLUDE) $(IGNORE)
 	@$(ECHO) "$(YELLOW)>>> Running mypy (standard)...$(RESET)"
-	@$(MYPY) . \
+	@$(MYPY) --install-types
+	@$(MYPY) src/ \
 	    --warn-return-any \
 	    --warn-unused-ignores \
 	    --ignore-missing-imports \
@@ -156,9 +156,10 @@ lint:
 
 lint-strict:
 	@$(ECHO) "$(YELLOW)>>> Running flake8...$(RESET)"
-	@$(FLAKE8) . $(EXCLUDE) $(IGNORE) 
+	@$(FLAKE8) src/ $(EXCLUDE) $(IGNORE) 
 	@$(ECHO) "$(YELLOW)>>> Running mypy (strict)...$(RESET)"
-	@$(MYPY) . --strict
+	@$(MYPY) --install-types
+	@$(MYPY) src/ --strict
 
 # ------------------------------------------------------------
 #  test — test the project with pytest framework 
@@ -172,16 +173,20 @@ test:
 #  campus-init — Set up environment in /tmp to bypass space constraints
 # ------------------------------------------------------------
 
+activate:
+	source $(VENV)/bin/activate
+
 campus-init:
 	@$(ECHO) "$(YELLOW)>>> Routing uv cache to /tmp...$(RESET)"
-	@export UV_CACHE_DIR="/tmp/$(USER)_uv_cache"; \
-	$(ECHO) "$(YELLOW)>>> Creating venv in /tmp...$(RESET)" ; \
-	$(UV) venv "/tmp/$(USER)_callmemaybe_$(VENV)" ; \
-	$(ECHO) "$(YELLOW)>>> Linking $(VENV)...$(RESET)" ; \
-	$(RM) $(VENV) ; \
-	ln -s "/tmp/$(USER)_callmemaybe_$(VENV)" $(VENV) ; \
-	$(ECHO) "$(YELLOW)>>> Syncing dependencies...$(RESET)" ; \
-	$(UV) sync
+	@$(RM) $(VENV)
+	@$(ECHO) "$(YELLOW)>>> Creating venv in /tmp...$(RESET)"
+	@$(UV) venv "$(VENV)"
+	@$(ECHO) "$(YELLOW)>>> Linking $(FALSE_VENV)...$(RESET)"
+	@$(RM) $(FALSE_VENV)
+	@ln -s "$(VENV)" $(FALSE_VENV)
+	@$(ECHO) "$(YELLOW)>>> Syncing dependencies...$(RESET)"
+	@$(UV) sync
+	@make install
 	@$(ECHO) "$(CYAN)>>> Campus environment ready! You can access it via: source $(VENV)/bin/activate$(RESET)"
 
 # ------------------------------------------------------------
@@ -195,37 +200,3 @@ clean-venv:
 	@$(RM) "/tmp/$(USER)_venv"
 	@$(RM) .venv
 	@$(ECHO) "$(CYAN)>>> Virtual environment cleanup complete.$(RESET)"
-
-# ------------------------------------------------------------
-#  visual — Visualise the generation process 
-# ------------------------------------------------------------
-
-visual:
-	@$(ECHO) "$(YELLOW)>>> Running the function calling tool with generation process visuals...$(RESET)"
-	@$(PYTHON) -m src \
-	--functions_definition $(FUNC_DEF) \
-	--input $(INPUT_F) \
-	--output $(OUTPUT_F) \
-	--verbose
-
-# ------------------------------------------------------------
-#  run-alt — execute the main script and clean up model weights
-# ------------------------------------------------------------
-
-run-alt:
-	@$(ECHO) "$(YELLOW)>>> Running engine with model: $(ALT)...$(RESET)"
-	@export HF_HOME="/tmp/$(USER)_hf_alt_cache"; \
-	LLM_MODEL_NAME="$(ALT)" $(PYTHON) -m src \
-	--functions_definition $(FUNC_DEF) \
-	--input $(INPUT_F) \
-	--output $(OUTPUT_F) \
-	--verbose; \
-	EXIT_STATUS=$$?; \
-	$(ECHO) "$(YELLOW)>>> Cleaning up downloaded model weights from /tmp...$(RESET)"; \
-	$(RM) "/tmp/$(USER)_hf_alt_cache"; \
-	if [ $$EXIT_STATUS -eq 0 ]; then \
-		$(ECHO) "$(CYAN)>>> Alternative model test complete and cleaned.$(RESET)"; \
-	else \
-		$(ECHO) "$(RED)>>> Engine crashed, but tmp was still cleaned.$(RESET)"; \
-	fi; \
-	exit $$EXIT_STATUS

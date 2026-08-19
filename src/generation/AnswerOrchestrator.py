@@ -1,7 +1,8 @@
 from pathlib import Path
 from tqdm import tqdm
 from ..minimal_search_results import MinimalAnswer
-from ..student_search import StudentSearchResults, StudentSearchResultsAndAnswer
+from ..student_search import StudentSearchResults
+from ..student_search import StudentSearchResultsAndAnswer
 from ..utils import error
 from .Generation import Generation
 

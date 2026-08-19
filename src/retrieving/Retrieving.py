@@ -2,6 +2,7 @@ import re
 import uuid
 from ..indexing import Indexing
 from pathlib import Path
+from typing import Any
 from ..utils.utils import error
 from ..minimal_search_results import MinimalSearchResults
 from ..student_search import StudentSearchResults
@@ -9,7 +10,7 @@ from ..parsing.parsing import parser
 
 
 class Retrieving():
-    def __init__(self, source: Path, question_path: Path, k: int = 1):
+    def __init__(self, source: Path, question_path: Path, k: int = 1) -> None:
         self.source: Path = source
         self.docs = Indexing()
         self.docs.load(Path(self.source))
@@ -32,7 +33,8 @@ class Retrieving():
 
         return StudentSearchResults(search_results=all_results, k=self.k)
 
-    def retrieving(self, question_id, question: str) -> MinimalSearchResults:
+    def retrieving(self, question_id: str,
+                   question: str) -> MinimalSearchResults:
         try:
             if not self.docs.bm25_index:
                 error("L'index BM25 not exist")
@@ -42,6 +44,8 @@ class Retrieving():
             tokenized_query = re.findall(r'\w+', question.lower())
 
             # Création du retriever BM25
+            if self.docs.bm25_index is None:
+                raise Exception("BM25 variable is not existing")
             retrieving = self.docs.bm25_index.get_top_n(tokenized_query,
                                                         self.docs.
                                                         indexed_sources,
@@ -52,13 +56,15 @@ class Retrieving():
             return results
         except Exception as e:
             error(f"error: {e}")
+            raise e
 
-    def search_query(self, query: str, k: int):
+    def search_query(self, query: str, k: int) -> Any:
         try:
             if not self.docs.bm25_index:
                 error("L'index BM25 not exist")
             tokenized_query = re.findall(r'\w+', query.lower())
-
+            if self.docs.bm25_index is None:
+                raise Exception("BM25 variable is not existing")
             retrieving = self.docs.bm25_index.get_top_n(tokenized_query,
                                                         self.docs.
                                                         indexed_sources,

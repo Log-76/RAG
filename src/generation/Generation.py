@@ -1,4 +1,5 @@
 import torch
+from typing import Any
 from ..parsing import MinimalSource
 from ..minimal_search_results import MinimalSearchResults, MinimalAnswer
 from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -8,9 +9,9 @@ from ..utils import retrieve_data_from_minimal_source
 
 class Generation():
     def __init__(self, model_name: str = "Qwen/Qwen3-0.6B") -> None:
-        self.model_name = model_name
-        self.tokenizer = None
-        self.model = None
+        self.model_name: str = model_name
+        self.tokenizer: Any | None = None
+        self.model: Any = None
 
     def load_model(self) -> None:
         try:
@@ -34,7 +35,8 @@ class Generation():
                     " about a codebase. Answer ONLY using the provided"
                     " context. Do not describe unrelated usage details."
                     " If the context does not contain the answer"
-                    ", say so explicitly. Be concise.")
+                    ", say so explicitly. Be concise. "
+                    "Only answer the question.")
             system_block = []
             for x in data_to_extract:
                 text = retrieve_data_from_minimal_source(x)
@@ -58,37 +60,41 @@ class Generation():
         self,
         search_result: MinimalSearchResults
     ) -> MinimalAnswer:
-        if self.model is None or self.tokenizer is None:
-            self.load_model()
-
-        messages = self.build_prompt(
-            search_result.retrieved_sources,
-            search_result.question
-        )
-        prompt = self.tokenizer.apply_chat_template(
-            messages,
-            tokenize=False,
-            add_generation_prompt=True,
-            enable_thinking=False
-        )
-        inputs = self.tokenizer(prompt, return_tensors="pt")
-        with torch.no_grad():
-            outputs = self.model.generate(
-                **inputs,
-                max_new_tokens=1024,
-                do_sample=False,
-                pad_token_id=self.tokenizer.pad_token_id
+        try:
+            if self.model is None or self.tokenizer is None:
+                self.load_model()
+            messages = self.build_prompt(
+                search_result.retrieved_sources,
+                search_result.question
             )
-        generated_tokens = outputs[0][inputs["input_ids"].shape[1]:]
-        raw_output = self.tokenizer.decode(generated_tokens, skip_special_tokens=False)
-        answer_text = self.tokenizer.decode(
-            generated_tokens,
-            skip_special_tokens=True
-        ).strip()
-        return MinimalAnswer(
-        question_id=search_result.question_id,
-        question=search_result.question,
-        retrieved_sources=search_result.retrieved_sources,
-        answer=answer_text
-    )
-
+            if self.tokenizer is None:
+                raise RuntimeError("Le tokenizer doit être "
+                                   "chargé avant de générer.")
+            prompt = self.tokenizer.apply_chat_template(
+                messages,
+                tokenize=False,
+                add_generation_prompt=True,
+                enable_thinking=False
+            )
+            inputs = self.tokenizer(prompt, return_tensors="pt")
+            with torch.no_grad():
+                outputs = self.model.generate(
+                    **inputs,
+                    max_new_tokens=1024,
+                    do_sample=False,
+                    pad_token_id=self.tokenizer.pad_token_id
+                )
+            generated_tokens = outputs[0][inputs["input_ids"].shape[1]:]
+            answer_text = self.tokenizer.decode(
+                generated_tokens,
+                skip_special_tokens=True
+            ).strip()
+            return MinimalAnswer(
+                question_id=search_result.question_id,
+                question=search_result.question,
+                retrieved_sources=search_result.retrieved_sources,
+                answer=answer_text
+            )
+        except Exception as e:
+            error(f"ERROR: {e}")
+            raise e

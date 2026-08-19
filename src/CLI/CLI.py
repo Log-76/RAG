@@ -1,14 +1,10 @@
-import json
-import traceback
-import os
 from pathlib import Path
-from typing import Any
-from tqdm import tqdm
 from ..utils import error
 from ..generation.AnswerOrchestrator import AnswerOrchestrator
 from ..generation import Generation
 from ..retrieving import Retrieving
 from ..indexing import Ingestion
+
 
 class CLI:
     def index(self, max_chunk_size: int = 2000,
@@ -16,7 +12,7 @@ class CLI:
               processed_dir: Path = Path("data/processed/")) -> None:
         try:
             if max_chunk_size <= 0 or max_chunk_size > 2000:
-                raise ValueError(f"Invalid max_chunk_size: {chunk_size}"
+                raise ValueError(f"Invalid max_chunk_size: {max_chunk_size}"
                                  "\nIt must be between 1 and 2000")
             raw_path = Path(raw_dir)
             processed_path = Path(processed_dir)
@@ -38,15 +34,17 @@ class CLI:
                 return
             if k <= 0:
                 raise ValueError(f"Invalid k value: {k}")
-            retrieving = Retrieving("data/processed", "aa", k)
+            retrieving = Retrieving(Path("data/processed"), Path("aa"), k)
             result = retrieving.search_query(query, k)
             for source in result.retrieved_sources:
-                print(f"{source.file_path} [{source.first_character_index}:{source.last_character_index}]")
+                print(f"{source.file_path} "
+                      f"[{source.first_character_index}:"
+                      f"{source.last_character_index}]")
         except Exception as e:
             error(f"ERROR: {e}")
             return
 
-    def answer_dataset(self, dataset_path: Path,
+    def search_dataset(self, dataset_path: Path,
                        k: int,
                        save_directory: Path) -> None:
         try:
@@ -54,11 +52,14 @@ class CLI:
                 raise ValueError(f"Invalid k value: {k}")
             processed_dataset_path = Path(dataset_path)
             process_save_dir = Path(save_directory)
-            if not processed_dataset_path.exists() or not processed_dataset_path.is_file():
+            if (
+                not processed_dataset_path.exists()
+                or not processed_dataset_path.is_file()
+            ):
                 error(f"ERROR: invalid directory: {processed_dataset_path}")
                 return
             process_save_dir.mkdir(parents=True, exist_ok=True)
-            retrieving = Retrieving("data/processed",
+            retrieving = Retrieving(Path("data/processed"),
                                     dataset_path,
                                     k)
             result = retrieving.retrieve_all()
@@ -77,8 +78,8 @@ class CLI:
                 error("The query cannot be empty")
                 return
             if k <= 0:
-                raise ValueError(f"Invalid k value: {k}")
-            retrieving = Retrieving("data/processed", "a", k)
+                raise ValueError(f"Traceback: Invalid k value: {k}")
+            retrieving = Retrieving(Path("data/processed"), Path("a"), k)
             search_result = retrieving.search_query(query, k)
             generation = Generation()
             answer = generation.generate_answer(search_result)  # MinimalAnswer
@@ -86,10 +87,11 @@ class CLI:
             print(f"Answer: {answer.answer}")
             print("Sources:")
             for source in answer.retrieved_sources:
-                print(f"  {source.file_path} [{source.first_character_index}:{source.last_character_index}]")
+                print(f"  {source.file_path} "
+                      f"[{source.first_character_index}:"
+                      f"{source.last_character_index}]")
         except Exception as e:
             error(f"ERROR: {e}")
-            traceback.print_exc()
             return
 
     def answer_dataset(self, student_search_results_path: Path,

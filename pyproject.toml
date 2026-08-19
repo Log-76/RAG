@@ -5,7 +5,7 @@ description = "RAG system indexing the vLLM codebase, answering questions with Q
 requires-python = ">=3.10"
 dependencies = [
     "pydantic>=2.0.0",
-    "torch>=2.2.0",
+    "torch>=2.13.0",
     "transformers>=4.51.0",
     "rank-bm25>=0.2.2",
     "langchain-text-splitters>=0.3.0",
@@ -27,6 +27,10 @@ exclude = [
     "data",
     "moulinette",
 ]
+
+[[tool.mypy.overrides]]
+module = ["rank_bm25", "langchain_text_splitters", "tokenizer"]
+ignore_missing_imports = true
 
 [tool.flake8]
 exclude = [

@@ -1,16 +1,12 @@
-from pydantic import BaseModel, Field
 from pathlib import Path
-#from .rag_dataset import RagDataset
-from ..utils import error, warning
+from ..utils import error
+from typing import Any
 import json
 
 
-class parser(BaseModel):
-    path: str = Field(
-        ...,
-        description="Path to the functions definition JSON file")
-
-    def load_file(path: Path):
+class parser():
+    @staticmethod
+    def load_file(path: Path) -> Any:
         try:
             with open(path, 'r', encoding='utf-8') as f:
                 raw_data = json.load(f)
@@ -23,30 +19,12 @@ class parser(BaseModel):
             error(f"error: {e}")
             return []
 
-    def parse_json(self, raw_data):
+    @staticmethod
+    def parse_json(raw_data: str) -> Any:
         if isinstance(raw_data, dict) and "rag_questions" in raw_data:
             try:
-                # return RagDataset.model_validate(raw_data)
                 return
             except Exception as e:
                 error(f"error: {e}")
         else:
             return None
-
-    def extend_file(self):
-        try:
-            if "." in self.path:
-                stock = self.path.split(".")
-                return stock[-1]
-        except Exception as e:
-            error(e)
-        return
-
-    def max_chunks(self, max_chunk=2000):
-        if not isinstance(max_chunk, int):
-            warning("is not int, value default is 2000")
-            return 2000
-
-        if max_chunk > 2000 or max_chunk <= 0:
-            max_chunk = 2000
-        return max_chunk

@@ -44,7 +44,7 @@ class Chunking():
         """
         Chunks the data using the .md algo
         """
-        overlap: int = self.chunk_size // 10
+        overlap: int = self.chunk_size // 6
         splitter = RecursiveCharacterTextSplitter(
             chunk_size=self.chunk_size,
             chunk_overlap=overlap,
@@ -64,7 +64,7 @@ class Chunking():
         """
         Chunks the data using the .py algo
         """
-        overlap: int = self.chunk_size // 10
+        overlap: int = self.chunk_size // 5
         splitter = RecursiveCharacterTextSplitter.from_language(
             chunk_size=self.chunk_size,
             chunk_overlap=overlap,

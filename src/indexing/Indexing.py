@@ -13,12 +13,54 @@ class Indexing():
         self.indexed_sources: list[MinimalSource] = []
         self.indexed_texts: list[str] = []
 
+    def split_identifier(self, token: str) -> list[str]:
+        """
+        Splits a snake_case/camelCase identifier into its component
+        subwords, e.g. 'AnswerOrchestrator' -> ['Answer', 'Orchestrator'],
+        'run_docs_recall' -> ['run', 'docs', 'recall'].
+        """
+        subwords: list[str] = []
+        for part in token.split('_'):
+            if not part:
+                continue
+            subwords.extend(re.findall(r'[A-Z]?[a-z0-9]+|[A-Z]+(?![a-z])',
+                                       part))
+        return subwords
+
+    def stem(self, word: str) -> str:
+        """
+        Very small suffix-stripping stemmer, applied to prose (.md)
+        tokens so that morphological variants (e.g. 'required' /
+        'requirement', 'installing' / 'installation') collapse to
+        the same token as the query's. Not linguistically exact,
+        but cheap and dependency-free, and it must produce the same
+        result here and in Retrieving.py for matches to work.
+        """
+        for suffix in ("ations", "ation", "ing", "tion", "ed", "es", "s"):
+            if len(word) > len(suffix) + 2 and word.endswith(suffix):
+                return word[: -len(suffix)]
+        return word
+
     def tokenize(self, text: str, file_type: str) -> list[str]:
         try:
             if file_type == "py":
-                return re.findall(r'\w+', text)
+                raw_tokens = re.findall(r'\w+', text)
+                tokens: list[str] = []
+                for tok in raw_tokens:
+                    tokens.append(tok.lower())
+                    subwords = self.split_identifier(tok)
+                    if len(subwords) > 1:
+                        tokens.extend(w.lower() for w in subwords)
+                return tokens
             elif file_type == "md":
-                return re.findall(r'\w+', text.lower())
+                raw_tokens = re.findall(r'\w+', text.lower())
+                tokens = []
+                for tok in raw_tokens:
+                    tokens.append(tok)
+                    stemmed = self.stem(tok)
+                    if stemmed != tok:
+                        tokens.append(stemmed)
+                return tokens
             else:
                 raise ValueError(f"Invalid doc type provided: {file_type}")
         except Exception as e:
@@ -35,7 +77,14 @@ class Indexing():
                 )
             for source, text in zip(data, texts):
                 file_type = Path(source.file_path).suffix.lstrip(".")
-                tokenized_corpus.append(self.tokenize(text, file_type))
+                tokens = self.tokenize(text, file_type)
+                if file_type == "py":
+                    filename = Path(source.file_path).stem
+                    tokens.append(filename.lower())
+                    tokens.extend(
+                        w.lower() for w in self.split_identifier(filename)
+                    )
+                tokenized_corpus.append(tokens)
 
             self.bm25_index = BM25Okapi(tokenized_corpus)
             self.indexed_sources = data

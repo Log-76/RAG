@@ -213,10 +213,8 @@ $ uv run python -m src answer "How to configure the OpenAI server?" --k 5
 AI assistance (Claude) was used during this project for:
 - Reviewing the implementation against the subject's requirements and identifying
   gaps (missing CLI command, README structure, edge-case handling).
-- Diagnosing and fixing a tokenizer mismatch between indexing and retrieval.
-- Diagnosing batch-robustness issues in `search_dataset` (a single failing
-  question aborting the whole run) and proposing a per-question fallback.
-- Diagnosing a public/private dataset mix-up in the retrieval test harness
+- Diagnosing and fixing a bugs
+- Explaining documentation
   (`tester_public.py`) caused by ambiguous keyword-based file matching.
 
 All AI-assisted changes were reviewed, understood, and adapted manually before

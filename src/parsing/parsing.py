@@ -24,7 +24,6 @@ class parser():
         try:
             with open(path, 'r', encoding='utf-8') as f:
                 raw_data = json.load(f)
-            # si data n existe pas alors return de list vide
             if not raw_data:
                 error("raw_data not exist")
                 return []

@@ -6,7 +6,28 @@ from src.utils.terminal_utils import error as err
 
 
 class RetrievalTester:
+    """Automates performance and quality testing for the RAG system.
+
+    Handles benchmarking indexing speed, warm retrieval throughput,
+    and evaluating
+    Recall metrics against ground-truth public datasets via an external binary.
+
+    Attributes:
+        moulinette_path (str): Path to the evaluation binary.
+        project_root (str): Root directory of the project.
+        docs_dataset (str): Path to the answered documentation dataset.
+        code_dataset (str): Path to the answered code dataset.
+        docs_unanswered (str): Path to the unanswered documentation dataset.
+        code_unanswered (str): Path to the unanswered code dataset.
+        search_output_dir (str): Directory where search outputs are saved.
+    """
     def __init__(self, moulinette_path: str = "./moulinette-ubuntu"):
+        """Initializes dataset paths and test environment configurations.
+
+        Args:
+            moulinette_path: Relative or absolute path
+            to the evaluation binary.
+        """
         self.moulinette_path = moulinette_path
         temp = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
         self.project_root = temp
@@ -30,6 +51,13 @@ class RetrievalTester:
                                               "data/output/search_results")
 
     def run_indexing(self) -> None:
+        """Measures corpus indexing performance against
+        a 300-second threshold.
+
+        Executes the indexing CLI command via a subprocess
+        and validates whether
+        the process completes within the required time limit.
+        """
         print(clr.apply("bold", "yellow", ">>> Test: Indexing (limit: 300s)"))
         start = time.time()
         try:
@@ -58,6 +86,13 @@ class RetrievalTester:
             err(f"Indexing crashed: {e}")
 
     def run_throughput(self) -> None:
+        """Benchmarks batch retrieval throughput against a 90-second limit.
+
+        Executes search retrieval for 200 questions across
+        documentation and code
+        unanswered datasets, asserting total processing time
+        stays under target.
+        """
         print(clr.apply("bold", "yellow", ">>> Test: Warm Retrieval"
                         "hroughput (200 questions in <= 90s)"))
         os.makedirs(self.search_output_dir, exist_ok=True)
@@ -160,6 +195,13 @@ class RetrievalTester:
             err(f"FAILED: Docs evaluation crashed: {e}")
 
     def run_code_recall(self) -> None:
+        """Evaluates Recall@5 metric for documentation queries
+        (threshold: 0.80).
+
+        Runs the external evaluation binary comparing
+        student search results against
+        the ground-truth answered documentation dataset.
+        """
         print(clr.apply("bold", "yellow", ">>> Test: "
                                           "Code Recall@5 (threshold: 0.50)"))
         res_file = self._get_results_file(self.code_unanswered)

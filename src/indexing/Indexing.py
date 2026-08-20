@@ -8,6 +8,18 @@ import re
 
 
 class Indexing():
+    """Manages text tokenization, BM25 indexing, and model persistence.
+
+    Handles language-specific tokenization (Python code identifiers vs
+    Markdown prose),
+    stemming, BM25 index construction, and serialization.
+
+    Attributes:
+        bm25_index (BM25Okapi | None): The constructed BM25 retrieval index.
+        indexed_sources (list[MinimalSource]): Metadata for indexed
+        document chunks.
+        indexed_texts (list[str]): Extracted text content of indexed chunks.
+    """
     def __init__(self) -> None:
         self.bm25_index: BM25Okapi | None = None
         self.indexed_sources: list[MinimalSource] = []
@@ -42,6 +54,18 @@ class Indexing():
         return word
 
     def tokenize(self, text: str, file_type: str) -> list[str]:
+        """Tokenizes text dynamically based on document type (py or md).
+
+        Args:
+            text: Raw string content of the document chunk.
+            file_type: Extension of the document ('py' or 'md').
+
+        Returns:
+            List of normalized token strings for indexing.
+
+        Raises:
+            ValueError: If an unsupported file extension is provided.
+        """
         try:
             if file_type == "py":
                 raw_tokens = re.findall(r'\w+', text)
@@ -68,6 +92,11 @@ class Indexing():
             return []
 
     def build_index(self, data: list[MinimalSource]) -> None:
+        """Constructs the BM25 index over a list of source metadata objects.
+
+        Args:
+            data: List of MinimalSource objects containing chunk location info.
+        """
         try:
             texts: list[str] = []
             tokenized_corpus: list[list[str]] = []

@@ -8,12 +8,37 @@ from ..utils import retrieve_data_from_minimal_source
 
 
 class Generation():
+    """Manages LLM loading, prompt construction, and answer generation.
+
+    Handles model initialization with HuggingFace transformers,
+    builds structured
+    RAG prompts from retrieved code/text contexts, and executes inference.
+
+    Attributes:
+        model_name (str): HuggingFace model identifier to load.
+        tokenizer (Any | None): Loaded tokenizer instance for text processing.
+        model (Any): Loaded CausalLM model instance for inference.
+    """
     def __init__(self, model_name: str = "Qwen/Qwen3-0.6B") -> None:
+        """Initializes the Generation pipeline configuration.
+
+        Args:
+            model_name: The HuggingFace repository ID of the generation model.
+        """
         self.model_name: str = model_name
         self.tokenizer: Any | None = None
         self.model: Any = None
 
     def load_model(self) -> None:
+        """Loads and initializes the model and tokenizer into memory.
+
+        Sets up the tokenizer with default pad tokens
+        and configures the causal LM
+        in evaluation mode using float32 precision.
+
+        Raises:
+            SystemExit: If loading the model or tokenizer fails.
+        """
         try:
             self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
             if self.tokenizer.pad_token is None:
@@ -29,6 +54,20 @@ class Generation():
 
     def build_prompt(self, data_to_extract: list[MinimalSource],
                      question: str) -> list[dict[str, str]]:
+        """Constructs a chat-formatted System/User prompt with
+        retrieved context.
+
+        Args:
+            data_to_extract: List of source snippet metadata references.
+            question: The target question string to answer.
+
+        Returns:
+            List of dictionary messages formatted for chat templates.
+
+        Raises:
+            Exception: Re-raises any error occurring
+            during prompt construction.
+        """
         try:
             system_context = (
                     "You are a technical assistant answering questions"
@@ -60,6 +99,23 @@ class Generation():
         self,
         search_result: MinimalSearchResults
     ) -> MinimalAnswer:
+        """Executes LLM inference to generate a grounded answer
+        for a search result.
+
+        Args:
+            search_result: Object containing question details
+            and top retrieved sources.
+
+        Returns:
+            MinimalAnswer instance populated with generated text
+            and attribution sources.
+
+        Raises:
+            RuntimeError: If the tokenizer is not properly
+            loaded prior to generation.
+            Exception: Re-raises execution errors encountered
+            during model generation.
+        """
         try:
             if self.model is None or self.tokenizer is None:
                 self.load_model()

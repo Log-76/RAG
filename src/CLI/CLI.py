@@ -1,5 +1,6 @@
 from pathlib import Path
 from ..utils import error
+from .tester_public import RetrievalTester
 from ..generation.AnswerOrchestrator import AnswerOrchestrator
 from ..generation import Generation
 from ..retrieving import Retrieving
@@ -107,3 +108,13 @@ class CLI:
             orchestrator.run(results_path, save_path)
         except Exception as e:
             error(f"ERROR: {e}")
+
+    def evaluate(self, student_search_result_path: Path,
+                 dataset_path: Path) -> None:
+        try:
+            retrieval_tester = RetrievalTester()
+            retrieval_tester.run_docs_recall()
+            retrieval_tester.run_code_recall()
+        except Exception as e:
+            error(f"ERROR: {e}")
+            return

@@ -98,10 +98,7 @@ install:
 
 run:
 	@$(ECHO) "$(YELLOW)>>> Running the function calling tool...$(RESET)"
-	@$(PYTHON) -m src \
-	--functions_definition $(FUNC_DEF) \
-	--input $(INPUT_F) \
-	--output $(OUTPUT_F)
+	@$(PYTHON) -m src index --max_chunk_size 2000
 
 # ------------------------------------------------------------
 #  debug — launch the main script under pdb
@@ -187,6 +184,8 @@ campus-init:
 	@$(ECHO) "$(YELLOW)>>> Syncing dependencies...$(RESET)"
 	@$(UV) sync
 	@make install
+	export HF_HOME                 := /tmp/hf-cache_$(USER_LOGIN)
+
 	@$(ECHO) "$(CYAN)>>> Campus environment ready! You can access it via: source $(VENV)/bin/activate$(RESET)"
 
 # ------------------------------------------------------------

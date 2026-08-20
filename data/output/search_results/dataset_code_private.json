@@ -3400,14 +3400,14 @@
           "last_character_index": 1512
         },
         {
-          "file_path": "data/raw/vllm-0.10.1/vllm/model_executor/layers/quantization/utils/int8_utils.py",
-          "first_character_index": 11236,
-          "last_character_index": 12837
-        },
-        {
           "file_path": "data/raw/vllm-0.10.1/vllm/model_executor/layers/quantization/utils/fp8_utils.py",
           "first_character_index": 18550,
           "last_character_index": 20141
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/vllm/model_executor/layers/quantization/utils/int8_utils.py",
+          "first_character_index": 11236,
+          "last_character_index": 12837
         },
         {
           "file_path": "data/raw/vllm-0.10.1/tests/models/multimodal/generation/vlm_utils/builders.py",

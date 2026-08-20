@@ -10,7 +10,6 @@ class RetrievalTester:
     def __init__(self, moulinette_path: str = "./moulinette-ubuntu"):
         self.moulinette_path = moulinette_path
         self.project_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-
         self.docs_dataset = os.path.join(self.project_root,
             "data/datasets/private/AnsweredQuestions/dataset_docs_private.json")
         self.code_dataset = os.path.join(self.project_root,
@@ -53,7 +52,7 @@ class RetrievalTester:
             res1 = subprocess.run(["uv", "run", "python", "-m", "src", "search_dataset", "--dataset_path", self.docs_unanswered, "--k", "10", "--save_directory", self.search_output_dir], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
             if res1.stdout: print(res1.stdout, end="")
             if res1.returncode != 0: raise subprocess.CalledProcessError(res1.returncode, res1.args)
-            
+
             print(clr.apply(None, "cyan", f"  Executing search for Code..."))
             res2 = subprocess.run(["uv", "run", "python", "-m", "src", "search_dataset", "--dataset_path", self.code_unanswered, "--k", "10", "--save_directory", self.search_output_dir], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
             if res2.stdout: print(res2.stdout, end="")

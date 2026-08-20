@@ -210,12 +210,12 @@ $ uv run python -m src answer "How to configure the OpenAI server?" --k 5
 
 ### AI usage
 
-AI assistance (Claude) was used during this project for:
+AI assistance was used during this project for:
 - Reviewing the implementation against the subject's requirements and identifying
   gaps (missing CLI command, README structure, edge-case handling).
 - Diagnosing and fixing a bugs
 - Explaining documentation
-  (`tester_public.py`) caused by ambiguous keyword-based file matching.
+- Writing documentation
 
 All AI-assisted changes were reviewed, understood, and adapted manually before
 being integrated into the project.

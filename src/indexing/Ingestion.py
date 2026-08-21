@@ -58,17 +58,26 @@ class Ingestion():
     def run_indexation(self, raw_dir: Path, processed_dir: Path) -> None:
         """
         Runs the full ingestion pipeline:
-        collect files -> chunk -> build index -> persist under
+        collect files -> make paths relative -> chunk -> build index -> persist under
         processed_dir.
         """
         files = self.collect_files(raw_dir)
         if not files:
             error(f"No supported files found under {raw_dir}")
             return
-        all_sources = self.chunk_files(files)
+        cwd = Path.cwd()
+        relative_files: list[Path] = []
+        for f in files:
+            try:
+                relative_files.append(f.relative_to(cwd))
+            except ValueError:
+                relative_files.append(f)
+
+        all_sources = self.chunk_files(relative_files)
         if not all_sources:
             error("Chunking produced no sources, aborting indexing")
             return
+
         self.indexer.build_index(all_sources)
         self.indexer.save(processed_dir)
         print(
